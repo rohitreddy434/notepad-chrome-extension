@@ -3,8 +3,10 @@ import { Note } from './types';
 import { notesDB } from './db';
 import Sidebar from './components/Sidebar';
 import NoteEditor from './components/NoteEditor';
+import SearchBar from './components/SearchBar';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { PrivacyProvider } from './contexts/PrivacyContext';
+import { SearchProvider } from './contexts/SearchContext';
 import ThemeToggle from './components/ThemeToggle';
 import PrivacyToggle from './components/PrivacyToggle';
 import PrivacyOverlay from './components/PrivacyOverlay';
@@ -192,6 +194,7 @@ function AppContent() {
       backgroundColor: theme.background,
       fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
     }}>
+      <SearchBar />
       <ThemeToggle />
       <PrivacyToggle />
       <Sidebar 
@@ -212,9 +215,11 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <PrivacyProvider>
-        <AppContent />
-      </PrivacyProvider>
+      <SearchProvider>
+        <PrivacyProvider>
+          <AppContent />
+        </PrivacyProvider>
+      </SearchProvider>
     </ThemeProvider>
   );
 }

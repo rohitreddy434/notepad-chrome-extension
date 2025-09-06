@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Note, Todo } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSearch } from '../contexts/SearchContext';
+import { highlightText, useHighlight } from '../utils/textHighlight';
 import TodoList from './TodoList';
 import ResizablePanes from './ResizablePanes';
 import PrivacyOverlay from './PrivacyOverlay';
@@ -12,9 +14,12 @@ interface NoteEditorProps {
 
 const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
   const { theme } = useTheme();
+  const { activeSearchQuery, hasActiveSearch } = useSearch();
+  const { getHighlightStyle } = useHighlight();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [showHighlight, setShowHighlight] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -143,29 +148,70 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: theme.background
+      backgroundColor: theme.background,
+      position: 'relative'
     }}>
       {/* Content Editor */}
-      <textarea
-        ref={contentRef}
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-        placeholder="Start writing your thoughts..."
-        style={{
-          flex: 1,
-          border: 'none',
-          outline: 'none',
-          resize: 'none',
-          fontSize: '16px',
-          lineHeight: '1.7',
-          padding: '32px',
-          backgroundColor: 'transparent',
-          color: theme.textSecondary,
-          fontFamily: 'inherit',
-          fontWeight: '400',
-          transition: 'color 0.2s ease'
-        }}
-      />
+      <div style={{ flex: 1, position: 'relative' }}>
+        <textarea
+          ref={contentRef}
+          value={content}
+          onChange={(e) => handleContentChange(e.target.value)}
+          onFocus={() => setShowHighlight(false)}
+          onBlur={() => setShowHighlight(true)}
+          placeholder="Start writing your thoughts..."
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            border: 'none',
+            outline: 'none',
+            resize: 'none',
+            fontSize: '16px',
+            lineHeight: '1.7',
+            padding: '32px',
+            backgroundColor: hasActiveSearch && showHighlight ? 'transparent' : theme.background,
+            color: hasActiveSearch && showHighlight ? 'transparent' : theme.textSecondary,
+            fontFamily: 'inherit',
+            fontWeight: '400',
+            transition: 'all 0.2s ease',
+            zIndex: hasActiveSearch && showHighlight ? 1 : 2
+          }}
+        />
+        
+        {/* Highlight Overlay (shows when not editing and search is active) */}
+        {hasActiveSearch && showHighlight && content && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              padding: '32px',
+              fontSize: '16px',
+              lineHeight: '1.7',
+              fontFamily: 'inherit',
+              fontWeight: '400',
+              color: theme.textSecondary,
+              backgroundColor: theme.background,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overflow: 'auto',
+              pointerEvents: 'none',
+              zIndex: 1
+            }}
+          >
+            {highlightText({
+              text: content,
+              query: activeSearchQuery,
+              highlightStyle: getHighlightStyle('primary')
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 

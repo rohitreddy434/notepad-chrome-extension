@@ -1,6 +1,8 @@
 import React from 'react';
 import { Note } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSearch } from '../contexts/SearchContext';
+import { highlightText, useHighlight } from '../utils/textHighlight';
 
 interface SidebarProps {
   notes: Note[];
@@ -18,6 +20,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteNote
 }) => {
   const { theme } = useTheme();
+  const { activeSearchQuery, hasActiveSearch } = useSearch();
+  const { getHighlightStyle } = useHighlight();
   const formatDate = (date: Date) => {
     const now = new Date();
     const noteDate = new Date(date);
@@ -34,6 +38,28 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength).trim() + '...';
   };
+
+  // Filter notes based on search query
+  const filteredNotes = React.useMemo(() => {
+    if (!hasActiveSearch) return notes;
+
+    return notes.filter(note => {
+      const searchLower = activeSearchQuery.toLowerCase();
+      
+      // Search in title
+      if (note.title.toLowerCase().includes(searchLower)) return true;
+      
+      // Search in content
+      if (note.content.toLowerCase().includes(searchLower)) return true;
+      
+      // Search in todos
+      if (note.todos && note.todos.some(todo => 
+        todo.text.toLowerCase().includes(searchLower)
+      )) return true;
+      
+      return false;
+    });
+  }, [notes, activeSearchQuery, hasActiveSearch]);
 
   return (
     <div style={{
@@ -104,7 +130,26 @@ const Sidebar: React.FC<SidebarProps> = ({
         overflowY: 'auto',
         padding: '8px 0'
       }}>
-        {notes.length === 0 ? (
+        {/* Search Results Info */}
+        {hasActiveSearch && (
+          <div style={{
+            padding: '12px 16px',
+            backgroundColor: theme.primary + '10',
+            border: `1px solid ${theme.primary}30`,
+            borderRadius: '8px',
+            margin: '8px 12px',
+            fontSize: '13px',
+            color: theme.primary,
+            fontWeight: '500'
+          }}>
+            {filteredNotes.length === 0 
+              ? `No results for "${activeSearchQuery}"`
+              : `Found ${filteredNotes.length} note${filteredNotes.length !== 1 ? 's' : ''} matching "${activeSearchQuery}"`
+            }
+          </div>
+        )}
+
+        {filteredNotes.length === 0 && !hasActiveSearch ? (
           <div style={{
             padding: '48px 20px',
             textAlign: 'center',
@@ -114,8 +159,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           }}>
             No notes yet. Click the + button to create your first note!
           </div>
+        ) : filteredNotes.length === 0 && hasActiveSearch ? (
+          <div style={{
+            padding: '40px 20px',
+            textAlign: 'center',
+            color: theme.textMuted,
+            fontSize: '15px',
+            lineHeight: '1.5'
+          }}>
+            No notes found for "{activeSearchQuery}"
+            <br />
+            <span style={{ fontSize: '13px', opacity: 0.8 }}>
+              Try a different search term
+            </span>
+          </div>
         ) : (
-          notes.map((note) => (
+          filteredNotes.map((note) => (
             <div
               key={note.id}
               style={{
@@ -160,7 +219,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                   whiteSpace: 'nowrap',
                   paddingRight: '30px' // Make space for delete button
                 }}>
-                  {note.title}
+                  {hasActiveSearch 
+                    ? highlightText({ 
+                        text: note.title, 
+                        query: activeSearchQuery,
+                        highlightStyle: getHighlightStyle('primary')
+                      })
+                    : note.title
+                  }
                 </div>
                 <div style={{
                   fontSize: '13px',
@@ -173,7 +239,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical'
                 }}>
-                  {note.content ? truncateContent(note.content, 60) : 'No content'}
+                  {note.content ? (
+                    hasActiveSearch 
+                      ? highlightText({ 
+                          text: truncateContent(note.content, 60), 
+                          query: activeSearchQuery,
+                          highlightStyle: getHighlightStyle('secondary')
+                        })
+                      : truncateContent(note.content, 60)
+                  ) : 'No content'}
                 </div>
                 <div style={{
                   fontSize: '12px',

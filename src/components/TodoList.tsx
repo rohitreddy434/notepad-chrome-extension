@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Todo } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSearch } from '../contexts/SearchContext';
+import { highlightText, useHighlight } from '../utils/textHighlight';
 
 interface TodoListProps {
   todos: Todo[];
@@ -9,6 +11,8 @@ interface TodoListProps {
 
 const TodoList: React.FC<TodoListProps> = ({ todos, onUpdateTodos }) => {
   const { theme } = useTheme();
+  const { activeSearchQuery, hasActiveSearch } = useSearch();
+  const { getHighlightStyle } = useHighlight();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showNewTodoInput, setShowNewTodoInput] = useState<boolean>(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -313,7 +317,22 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onUpdateTodos }) => {
                   minHeight: '20px'
                 }}
               >
-                {todo.text || 'Click to edit...'}
+                {todo.text ? (
+                  hasActiveSearch ? (
+                    highlightText({
+                      text: todo.text,
+                      query: activeSearchQuery,
+                      highlightStyle: {
+                        ...getHighlightStyle('secondary'),
+                        textDecoration: todo.completed ? 'line-through' : 'none'
+                      }
+                    })
+                  ) : (
+                    todo.text
+                  )
+                ) : (
+                  'Click to edit...'
+                )}
               </div>
             )}
           </div>

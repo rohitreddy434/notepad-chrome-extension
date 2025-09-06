@@ -12,11 +12,12 @@ export const highlightText = ({ text, query, highlightStyle }: HighlightProps): 
   }
 
   const defaultHighlightStyle: React.CSSProperties = {
-    backgroundColor: '#fbbf24', // Yellow highlight
+    backgroundColor: '#fbbf24', // Bright yellow highlight
     color: '#1f2937', // Dark text for contrast
-    padding: '1px 2px',
-    borderRadius: '2px',
-    fontWeight: '500',
+    padding: '2px 4px',
+    borderRadius: '3px',
+    fontWeight: '600',
+    boxShadow: '0 1px 2px rgba(251, 191, 36, 0.3)',
     ...highlightStyle
   };
 
@@ -55,19 +56,21 @@ export const useHighlight = () => {
   const getHighlightStyle = (variant: 'primary' | 'secondary' = 'primary'): React.CSSProperties => {
     if (variant === 'primary') {
       return {
-        backgroundColor: theme.primary + '40',
-        color: theme.text,
-        padding: '1px 3px',
+        backgroundColor: '#fbbf24', // Bright yellow
+        color: '#1f2937', // Dark text
+        padding: '2px 4px',
         borderRadius: '3px',
-        fontWeight: '600'
+        fontWeight: '600',
+        boxShadow: '0 1px 2px rgba(251, 191, 36, 0.3)'
       };
     } else {
       return {
-        backgroundColor: theme.secondary + '30',
-        color: theme.text,
-        padding: '1px 2px',
-        borderRadius: '2px',
-        fontWeight: '500'
+        backgroundColor: '#fcd34d', // Slightly lighter yellow
+        color: '#1f2937', // Dark text
+        padding: '1px 3px',
+        borderRadius: '3px',
+        fontWeight: '600',
+        boxShadow: '0 1px 1px rgba(252, 211, 77, 0.3)'
       };
     }
   };

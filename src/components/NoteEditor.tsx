@@ -19,7 +19,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [showHighlight, setShowHighlight] = useState(false);
+  const [showHighlight, setShowHighlight] = useState(true);
   const titleRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -35,6 +35,11 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
       setTodos([]);
     }
   }, [note]);
+
+  // Show highlights by default when search is active
+  useEffect(() => {
+    setShowHighlight(hasActiveSearch);
+  }, [hasActiveSearch]);
 
   const saveNote = (newTitle?: string, newContent?: string, newTodos?: Todo[]) => {
     if (!note) return;
@@ -172,18 +177,23 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
             fontSize: '16px',
             lineHeight: '1.7',
             padding: '32px',
-            backgroundColor: hasActiveSearch && showHighlight ? 'transparent' : theme.background,
-            color: hasActiveSearch && showHighlight ? 'transparent' : theme.textSecondary,
+            backgroundColor: theme.background,
+            color: theme.textSecondary,
             fontFamily: 'inherit',
             fontWeight: '400',
             transition: 'all 0.2s ease',
-            zIndex: hasActiveSearch && showHighlight ? 1 : 2
+            zIndex: 2
           }}
         />
         
-        {/* Highlight Overlay (shows when not editing and search is active) */}
+        {/* Highlight Overlay (shows when search is active and not actively editing) */}
         {hasActiveSearch && showHighlight && content && (
           <div
+            onClick={() => {
+              // Click on highlight overlay to focus the textarea
+              setShowHighlight(false);
+              contentRef.current?.focus();
+            }}
             style={{
               position: 'absolute',
               top: 0,
@@ -200,8 +210,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, onUpdateNote }) => {
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
               overflow: 'auto',
-              pointerEvents: 'none',
-              zIndex: 1
+              cursor: 'text',
+              zIndex: 3
             }}
           >
             {highlightText({

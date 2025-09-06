@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+    .button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+    }
+    .button:hover {
+      background: #3367d6;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 Notepad Extension</h1>
+  <p>Your notepad opens automatically in new tabs. Click the button below to open it now!</p>
+  <button class="button" id="openNotepad">Open Notepad</button>
+  
+  <script>
+    document.getElementById('openNotepad').addEventListener('click', function() {
+      chrome.tabs.create({ url: 'chrome://newtab/' });
+      window.close();
+    });
+  </script>
+</body>
+</html>
